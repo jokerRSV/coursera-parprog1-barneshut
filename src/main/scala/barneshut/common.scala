@@ -87,7 +87,7 @@ case class Leaf(centerX: Float, centerY: Float, size: Float, bodies: coll.Seq[Bo
           Empty(centerX + size / 4, centerY - size / 4, size / 2),
           Empty(centerX - size / 4, centerY + size / 4, size / 2),
           Empty(centerX + size / 4, centerY + size / 4, size / 2))
-      bodies.foldLeft(newFork)((fork, newB) => fork.insert(newB))
+      newBodies.foldLeft(newFork)((fork, newB) => fork.insert(newB))
     else
       Leaf(centerX, centerY, size, newBodies)
 
@@ -134,12 +134,21 @@ class Body(val mass: Float, val x: Float, val y: Float, val xspeed: Float, val y
 
     def traverse(quad: Quad): Unit = (quad: Quad) match
       case Empty(_, _, _) =>
-        // no force
+      // no force
       case Leaf(_, _, _, bodies) =>
         // add force contribution of each body by calling addForce
-      case Fork(nw, ne, sw, se) =>
+        bodies.foreach(b => addForce(b.mass, b.x, b.y))
+      case f@Fork(nw, ne, sw, se) =>
         // see if node is far enough from the body,
         // or recursion is needed
+        val isFar = quad.size / distance(quad.massX, quad.massY, x, y) < theta
+        if (isFar) addForce(quad.mass, quad.massX, quad.massY)
+        else {
+          traverse(nw)
+          traverse(ne)
+          traverse(sw)
+          traverse(se)
+        }
 
     traverse(quad)
 
