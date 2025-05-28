@@ -165,16 +165,19 @@ val SECTOR_PRECISION = 8
 class SectorMatrix(val boundaries: Boundaries, val sectorPrecision: Int) extends SectorMatrixInterface:
   val sectorSize = boundaries.size / sectorPrecision
   val matrix = new Array[ConcBuffer[Body]](sectorPrecision * sectorPrecision)
-  for i <- 0 until matrix.length do matrix(i) = ConcBuffer()
+  for i <- matrix.indices yield matrix(i) = ConcBuffer()
 
   def +=(b: Body): SectorMatrix =
-    ???
+    val x = ((math.min(b.x, boundaries.maxX) - boundaries.minX) / sectorSize).toInt.min(sectorPrecision - 1)
+    val y = ((math.min(b.y, boundaries.maxY) - boundaries.minY) / sectorSize).toInt.min(sectorPrecision - 1)
+    apply(x, y) += b
     this
 
   def apply(x: Int, y: Int) = matrix(y * sectorPrecision + x)
 
   def combine(that: SectorMatrix): SectorMatrix =
-    ???
+    for i <- matrix.indices yield that.matrix(i).map(b => matrix(i) += b)
+    this
 
   def toQuad(parallelism: Int): Quad =
     def BALANCING_FACTOR = 4

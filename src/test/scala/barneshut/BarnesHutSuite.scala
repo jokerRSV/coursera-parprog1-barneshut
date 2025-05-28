@@ -105,6 +105,19 @@ class BarnesHutSuite extends munit.FunSuite:
     assert(res, s"Body not found in the right sector")
   }
 
+  test("'SectorMatrix.+=' should add a body at (100,100) to the correct bucket of a sector matrix of size 96 (2pts)") {
+    val body = Body(5, 100, 100, 0.1f, 0.1f)
+    val boundaries = Boundaries()
+    boundaries.minX = 1
+    boundaries.minY = 1
+    boundaries.maxX = 97
+    boundaries.maxY = 97
+    val sm = SectorMatrix(boundaries, SECTOR_PRECISION)
+    sm += body
+    val res = sm(7, 7).size == 1 && sm(7, 7).exists(_ == body)
+    assert(res, s"Body not found in the right sector")
+  }
+
   import scala.concurrent.duration.*
   override val munitTimeout = 10.seconds
 
